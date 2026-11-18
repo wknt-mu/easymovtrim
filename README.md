@@ -1,6 +1,15 @@
 # EasyMovTrim
 
-macOS 用の動画トリムアプリです（SwiftUI + AVFoundation、単体で動作）。
+動画トリムアプリです。Mac 版と Windows 版があります。
+
+| | Mac 版 | Windows 版 |
+|---|---|---|
+| 技術 | SwiftUI + AVFoundation（`Sources/`） | Python + Qt (PySide6)（`windows/`） |
+| プラグイン | Audio Unit (AUv2 / AUv3) | VST3 |
+| 配布物 | `EasyMovTrim-x.x.x-mac.dmg`（Apple Silicon / Intel） | `EasyMovTrim-x.x.x-windows-setup.exe` / `.zip`（x64） |
+| ffmpeg | ソースからビルドした LGPL 版を同梱 | BtbN/FFmpeg-Builds の GPL 版を同梱 |
+
+機能・操作・音声処理（プラグイン → フェーダー → フェード → メーター）は両方とも同じです。
 
 ## 機能
 
@@ -28,7 +37,47 @@ macOS 用の動画トリムアプリです（SwiftUI + AVFoundation、単体で�
 | L | ループ再生 切り替え |
 | ⌘O / ⌘E | 開く / 書き出す |
 
-## ビルド
+## 配布用パッケージの作り方
+
+### GitHub Actions でまとめて作る（推奨）
+
+`.github/workflows/build.yml` で Mac 版と Windows 版を両方ビルドします。
+
+1. GitHub にリポジトリを作り、このフォルダを push します
+2. **手動で作る:** GitHub の「Actions」→「Build packages」→「Run workflow」。完了後、実行結果のページの Artifacts から DMG と Windows 版をダウンロードできます
+3. **リリースとして公開する:** バージョンのタグを push すると、GitHub Releases に DMG・インストーラー・ZIP が添付されます
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### Mac で手元で作る
+
+```bash
+scripts/build_ffmpeg_mac.sh   # 初回のみ。ffmpeg 8.0.1 をソースから LGPL 版でビルド（数分）
+scripts/package_mac.sh        # dist/EasyMovTrim-1.0.0-mac.dmg ができる
+```
+
+Apple の Developer ID で署名していないため、受け取った人は初回だけ「システム設定 → プライバシーとセキュリティ → このまま開く」で許可が必要です（手順書を DMG に同梱しています）。Developer ID を持っている場合は `SIGN_IDENTITY="Developer ID Application: ..."` を付けてビルドし、`xcrun notarytool` で公証すると警告なしで開けるようになります。
+
+### Windows で手元で作る
+
+Python 3.12（64bit）と、必要なら Inno Setup 6 を入れた Windows で:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File windows\build_windows.ps1 -Version 1.0.0
+```
+
+`dist\` に ZIP 版とインストーラーができます。
+
+### ライセンス上の注意
+
+- Mac 版に同梱している ffmpeg は LGPL です
+- Windows 版は GPL v3 の pedalboard（VST3 の読み込みに使用）を組み込んでいるため、Windows 版を配布するときは、このアプリのソースコードも GPL v3 の条件で公開する必要があります（GitHub で公開リポジトリにするなど）
+- 詳細は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+
+## Mac 版のビルド（開発用）
 
 Xcode（コマンドラインツール）が入った macOS 14 以降で:
 
@@ -42,10 +91,10 @@ Xcode（コマンドラインツール）が入った macOS 14 以降で:
 
 MP4/MOV 以外の形式を開くときに ffmpeg を使います。探す順番は次のとおりです。
 
-1. アプリ内 `EasyMovTrim.app/Contents/Resources/bin/ffmpeg`
+1. アプリ内 `EasyMovTrim.app/Contents/MacOS/ffmpeg`
 2. `/opt/homebrew/bin`, `/usr/local/bin` など
 
-他の Mac にアプリだけを配って使う場合は、静的リンク版の `ffmpeg` と `ffprobe` を `vendor/` に置いてからビルドすると、アプリ内に同梱されます（Homebrew 版は外部ライブラリに依存するため、同梱しても他の Mac では動きません）。
+`vendor/ffmpeg` と `vendor/ffprobe` があると、ビルド時にアプリ内へ同梱されます。`scripts/build_ffmpeg_mac.sh` で、macOS 標準のライブラリだけに依存する LGPL 版を作れます（Homebrew 版は外部ライブラリに依存するため、同梱しても他の Mac では動きません）。
 
 ## コマンドラインでの書き出し
 
@@ -55,7 +104,19 @@ build/EasyMovTrim.app/Contents/MacOS/EasyMovTrim --export in.mkv out.mp4 \
 build/EasyMovTrim.app/Contents/MacOS/EasyMovTrim --list-plugins
 ```
 
+## Windows 版を Mac / Windows でソースから動かす（開発用）
+
+```bash
+cd windows
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python -m easymovtrim_win            # 画面
+.venv/bin/python -m easymovtrim_win --export in.mkv out.mp4 --in 1 --out 5 --quality light
+```
+
 ## 構成
+
+`Sources/EasyMovTrim/`（Mac 版）
 
 - `AudioProcessing.swift` — 音声タップ（音量・フェード・メーター）
 - `EffectChain.swift` — Audio Unit の挿入と処理
@@ -63,3 +124,9 @@ build/EasyMovTrim.app/Contents/MacOS/EasyMovTrim --list-plugins
 - `Exporter.swift` — AVAssetReader/Writer による MP4 書き出し
 - `AppModel.swift` — アプリの状態と操作
 - `ContentView.swift`, `TimelineViews.swift`, `AudioPanel.swift`, `PluginWindows.swift` — 画面
+
+`windows/easymovtrim_win/`（Windows 版）
+- `audio_engine.py` — 再生・プラグイン・音量・フェード・メーター
+- `media.py` — ffmpeg / ffprobe の呼び出し
+- `exporter.py` — MP4 書き出し
+- `ui.py`, `widgets.py` — 画面

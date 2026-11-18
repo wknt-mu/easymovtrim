@@ -1,0 +1,91 @@
+name: Build packages
+
+# Builds the macOS DMG and the Windows installer/zip.
+# - Manual run: Actions tab -> "Build packages" -> Run workflow
+# - Release:    push a tag like v1.0.0 -> files are attached to a GitHub Release
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache ffmpeg build
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/ffmpeg
+            vendor/ffprobe
+          key: ffmpeg-mac-${{ hashFiles('scripts/build_ffmpeg_mac.sh') }}
+
+      - name: Build LGPL ffmpeg (universal)
+        run: |
+          if [[ ! -x vendor/ffmpeg ]]; then
+            brew install nasm
+            scripts/build_ffmpeg_mac.sh
+          fi
+
+      - name: Build DMG
+        run: scripts/package_mac.sh
+
+      - name: Smoke test
+        run: |
+          B=build/EasyMovTrim.app/Contents/MacOS
+          $B/ffmpeg -hide_banner -loglevel error -y -f lavfi -i testsrc2=size=640x360:rate=30:duration=4 \
+            -f lavfi -i sine=frequency=440:duration=4 -c:v mpeg4 -c:a pcm_s16le /tmp/in.avi
+          $B/EasyMovTrim --export /tmp/in.avi /tmp/out.mp4 --in 1 --out 3 --quality light --fadein 0.5
+          $B/ffprobe -v error -show_entries format=duration -of csv=p=0 /tmp/out.mp4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EasyMovTrim-mac
+          path: dist/*.dmg
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $version = "1.0.0"
+          if ("${{ github.ref_type }}" -eq "tag") { $version = "${{ github.ref_name }}".TrimStart("v") }
+          windows\build_windows.ps1 -Version $version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EasyMovTrim-windows
+          path: |
+            dist/*.zip
+            dist/*.exe
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: [mac, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true

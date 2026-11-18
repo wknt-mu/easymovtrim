@@ -2,3 +2,10 @@
 build/
 vendor/
 .DS_Store
+dist/
+windows/.venv/
+windows/ffmpeg_bin/
+windows/build/
+windows/dist/
+__pycache__/
+*.pyc

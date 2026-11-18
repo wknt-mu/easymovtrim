@@ -35,11 +35,14 @@ cp build/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 # Optional bundled ffmpeg
 for tool in ffmpeg ffprobe; do
     if [[ -x vendor/$tool ]]; then
-        mkdir -p "$APP/Contents/Resources/bin"
-        cp "vendor/$tool" "$APP/Contents/Resources/bin/$tool"
+        cp "vendor/$tool" "$APP/Contents/MacOS/$tool"
+        codesign --force --sign - "$APP/Contents/MacOS/$tool"
         echo "bundled vendor/$tool"
     fi
 done
+cp THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/" 2>/dev/null || true
 
-codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
+# Ad-hoc signature (no Developer ID). Set SIGN_IDENTITY to sign with a real certificate.
+codesign --force --sign "${SIGN_IDENTITY:--}" "$APP"
+codesign --verify --strict "$APP"
 echo "built: $APP"
