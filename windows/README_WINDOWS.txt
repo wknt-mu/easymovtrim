@@ -27,6 +27,14 @@
   メインウィンドウを操作できません（音は鳴り続けます）。
   「⚙」ボタンのパラメーター一覧は開いたまま操作できます。
 
+■ 製作者・お問い合わせ
+  Copyright © 2026 Naoto Iwaki
+  ソースコード: https://github.com/wknt-mu/easymovtrim
+  お問い合わせ・不具合報告: https://github.com/wknt-mu/easymovtrim/issues
+
 ■ ライセンス
-  同梱ソフトウェアのライセンスはメニューの「ヘルプ → ライセンス情報」、
-  またはインストール先の _internal\THIRD_PARTY_NOTICES.md をご覧ください。
+  EasyMovTrim は GNU GPL v3 以降の条件で配布されるフリーソフトウェアです（LICENSE.txt）。
+  いかなる保証もありません。
+  FFmpeg（LGPL）、Qt / PySide6（LGPL）、pedalboard / JUCE（GPL v3）などを使用しています。
+  詳細はメニューの「ヘルプ → ライセンス情報」、または THIRD_PARTY_NOTICES.md と
+  _internal\licenses フォルダをご覧ください。

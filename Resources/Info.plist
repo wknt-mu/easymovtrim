@@ -7,11 +7,13 @@
     <key>CFBundleExecutable</key>
     <string>EasyMovTrim</string>
     <key>CFBundleIdentifier</key>
-    <string>local.easymovtrim.EasyMovTrim</string>
+    <string>io.github.wknt-mu.easymovtrim</string>
     <key>CFBundleName</key>
     <string>EasyMovTrim</string>
     <key>CFBundleDisplayName</key>
     <string>EasyMovTrim</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © 2026 Naoto Iwaki. GPL-3.0-or-later.</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundlePackageType</key>

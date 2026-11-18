@@ -11,7 +11,7 @@ from typing import Callable, Optional
 
 import numpy as np
 from PySide6.QtCore import QEvent, QObject, QThread, QTimer, QUrl, Qt, Signal, Slot
-from PySide6.QtGui import QAction, QColor, QIcon, QKeySequence, QPalette, QPixmap
+from PySide6.QtGui import QAction, QColor, QDesktopServices, QIcon, QKeySequence, QPalette, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer
 from PySide6.QtMultimediaWidgets import QVideoWidget
 from PySide6.QtWidgets import (
@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
     QRadioButton, QScrollArea, QSlider, QStackedWidget, QStyle, QToolButton, QVBoxLayout, QWidget,
 )
 
-from . import media
+from . import APP_VERSION, COPYRIGHT, ISSUES_URL, REPOSITORY_URL, media
 from .audio_engine import (
     SILENCE_DB, AudioEngine, AudioParams, PluginSlot, db_to_gain, load_plugin, plugin_names_in, scan_plugins,
 )
@@ -567,6 +567,10 @@ class MainWindow(QMainWindow):
         p.addAction(QAction("現在位置を終了点に（O）", self, triggered=lambda: self.set_out(self.current)))
         p.addAction(QAction("範囲をリセット", self, triggered=self.reset_range))
         h = self.menuBar().addMenu("ヘルプ")
+        h.addAction(QAction("EasyMovTrim について", self, triggered=self._show_about))
+        h.addAction(QAction("お問い合わせ・不具合報告…", self,
+                            triggered=lambda: QDesktopServices.openUrl(QUrl(ISSUES_URL))))
+        h.addSeparator()
         h.addAction(QAction("ライセンス情報", self, triggered=self._show_licenses))
 
     # ---------------------------------------------------------------- state sync
@@ -935,24 +939,53 @@ class MainWindow(QMainWindow):
         w.start()
         dlg.show()
 
+    def _show_about(self) -> None:
+        QMessageBox.about(self, f"{APP_NAME} について", (
+            f"<h3>{APP_NAME} {APP_VERSION}</h3>"
+            f"<p>{COPYRIGHT}</p>"
+            "<p>このプログラムはフリーソフトウェアです。GNU General Public License v3 以降の条件で"
+            "再配布・改変できます。いかなる保証もありません。</p>"
+            f"<p><a href='{REPOSITORY_URL}'>ソースコード</a>　"
+            f"<a href='{ISSUES_URL}'>お問い合わせ・不具合報告</a></p>"
+            "<p>FFmpeg（LGPL）、Qt（LGPL）、pedalboard / JUCE（GPL）などを使用しています。"
+            "詳細は「ヘルプ → ライセンス情報」をご覧ください。</p>"))
+
     def _show_licenses(self) -> None:
-        text = "EasyMovTrim\n\n"
+        text = ""
         for p in (media.resource_dir() / "THIRD_PARTY_NOTICES.md",
                   media.resource_dir().parent.parent / "THIRD_PARTY_NOTICES.md"):
             if p.is_file():
-                text += p.read_text(encoding="utf-8")
+                text = p.read_text(encoding="utf-8")
                 break
+        if not text:
+            text = f"{APP_NAME} {APP_VERSION}\n{COPYRIGHT}\nGPL-3.0-or-later\n{REPOSITORY_URL}"
         dlg = QDialog(self)
         dlg.setWindowTitle("ライセンス情報")
-        dlg.resize(640, 560)
+        dlg.resize(720, 620)
         lay = QVBoxLayout(dlg)
         view = QLabel(text)
         view.setWordWrap(True)
         view.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        view.setStyleSheet("font-family: Consolas, monospace;")
         area = QScrollArea()
         area.setWidgetResizable(True)
         area.setWidget(view)
         lay.addWidget(area)
+        row = QHBoxLayout()
+        folder = QPushButton("ライセンス全文のフォルダを開く")
+        lic_dir = media.resource_dir() / "licenses"
+        if not lic_dir.is_dir():
+            lic_dir = media.resource_dir().parent.parent / "licenses"
+        folder.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(lic_dir))))
+        src = QPushButton("ソースコード（GitHub）")
+        src.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(REPOSITORY_URL)))
+        close = QPushButton("閉じる")
+        close.clicked.connect(dlg.accept)
+        row.addWidget(folder)
+        row.addWidget(src)
+        row.addStretch()
+        row.addWidget(close)
+        lay.addLayout(row)
         dlg.exec()
 
     # ---------------------------------------------------------------- events

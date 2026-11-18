@@ -10,6 +10,13 @@ AppId={{8C6E2E0B-4E57-4C2F-9A43-6B1E8F3D2A71}
 AppName=EasyMovTrim
 AppVersion={#AppVersion}
 AppPublisher=Naoto Iwaki
+AppCopyright=Copyright (C) 2026 Naoto Iwaki
+AppPublisherURL=https://github.com/wknt-mu/easymovtrim
+AppSupportURL=https://github.com/wknt-mu/easymovtrim/issues
+AppUpdatesURL=https://github.com/wknt-mu/easymovtrim/releases
+VersionInfoVersion={#AppVersion}
+VersionInfoCopyright=Copyright (C) 2026 Naoto Iwaki
+LicenseFile=..\LICENSE
 DefaultDirName={autopf}\EasyMovTrim
 DefaultGroupName=EasyMovTrim
 DisableProgramGroupPage=yes
@@ -35,6 +42,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "dist\EasyMovTrim\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "README_WINDOWS.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE.txt"; Flags: ignoreversion
+Source: "..\THIRD_PARTY_NOTICES.md"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\EasyMovTrim"; Filename: "{app}\EasyMovTrim.exe"

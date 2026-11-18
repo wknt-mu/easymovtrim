@@ -21,6 +21,8 @@ datas = [
     *([(os.path.join(here, "ffmpeg_bin", f), "ffmpeg") for f in os.listdir(os.path.join(here, "ffmpeg_bin"))
        if f.endswith(".txt")] if os.path.isdir(os.path.join(here, "ffmpeg_bin")) else []),
     (os.path.join(here, "..", "THIRD_PARTY_NOTICES.md"), "."),
+    (os.path.join(here, "..", "LICENSE"), "."),
+    (os.path.join(here, "..", "licenses"), "licenses"),
 ]
 
 a = Analysis(
@@ -33,6 +35,10 @@ a = Analysis(
               "PySide6.QtQuick3D", "PySide6.QtCharts", "PySide6.QtDataVisualization", "PySide6.QtPdf"],
     noarchive=False,
 )
+# PortAudio's ASIO build is covered by Steinberg's separate ASIO SDK license; ship only the default build.
+a.binaries = [b for b in a.binaries if "asio" not in os.path.basename(b[0]).lower()]
+a.datas = [d for d in a.datas if "asio" not in os.path.basename(d[0]).lower()]
+
 pyz = PYZ(a.pure)
 exe = EXE(
     pyz, a.scripts, [],
@@ -40,5 +46,6 @@ exe = EXE(
     name="EasyMovTrim",
     console=False,
     icon=os.path.join(pkg, "assets", "icon.ico"),
+    version=os.path.join(here, "version_info.txt") if sys.platform == "win32" else None,
 )
 coll = COLLECT(exe, a.binaries, a.datas, name="EasyMovTrim")

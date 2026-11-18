@@ -40,7 +40,10 @@ for tool in ffmpeg ffprobe; do
         echo "bundled vendor/$tool"
     fi
 done
-cp THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/" 2>/dev/null || true
+# License texts and notices (GPL-3.0 for the app, LGPL-2.1 for the bundled FFmpeg)
+cp THIRD_PARTY_NOTICES.md LICENSE Resources/Credits.html "$APP/Contents/Resources/"
+mkdir -p "$APP/Contents/Resources/licenses"
+cp licenses/GPL-3.0.txt licenses/LGPL-2.1.txt "$APP/Contents/Resources/licenses/"
 
 # Ad-hoc signature (no Developer ID). Set SIGN_IDENTITY to sign with a real certificate.
 codesign --force --sign "${SIGN_IDENTITY:--}" "$APP"

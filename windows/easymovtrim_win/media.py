@@ -248,6 +248,8 @@ def h264_encoder_args(bitrate: int, crf: int, quality_preset: str = "medium") ->
             out.append(["-c:v", hw, "-b:v", str(bitrate)])
     if "libopenh264" in enc:
         out.append(["-c:v", "libopenh264", "-b:v", str(bitrate)])
+    if "mpeg4" in enc:  # last resort when no H.264 encoder works on this PC (still an MP4 file)
+        out.append(["-c:v", "mpeg4", "-q:v", "3"])
     return out
 
 

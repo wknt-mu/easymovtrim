@@ -31,6 +31,13 @@ EasyMovTrim for Mac
   キー操作: Space 再生/停止、←→ コマ送り（Shift で1秒）、
             I / O 開始点/終了点、L ループ、⌘E 書き出し
 
+■ 製作者・お問い合わせ
+  Copyright © 2026 Naoto Iwaki
+  ソースコード: https://github.com/wknt-mu/easymovtrim
+  お問い合わせ・不具合報告: https://github.com/wknt-mu/easymovtrim/issues
+
 ■ ライセンス
-  同梱の ffmpeg / ffprobe は LGPL v2.1 で配布されている FFmpeg です。
-  詳しくは THIRD_PARTY_NOTICES.md をご覧ください。
+  EasyMovTrim は GNU GPL v3 以降の条件で配布されるフリーソフトウェアです（LICENSE）。
+  いかなる保証もありません。
+  同梱の ffmpeg / ffprobe は LGPL v2.1 の FFmpeg です（licenses/LGPL-2.1.txt）。
+  詳しくは THIRD_PARTY_NOTICES.md、またはアプリの「ヘルプ」→「ライセンス情報」をご覧ください。

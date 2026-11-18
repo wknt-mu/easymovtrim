@@ -54,7 +54,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: EasyMovTrim-mac
-          path: dist/*.dmg
+          path: |
+            dist/*.dmg
+            dist/*-source.tar.xz
 
   windows:
     runs-on: windows-latest
@@ -84,6 +86,7 @@ jobs:
           path: |
             dist/*.zip
             dist/*.exe
+            dist/*-source.tar.gz
 
   release:
     if: github.ref_type == 'tag'

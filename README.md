@@ -7,7 +7,7 @@
 | 技術 | SwiftUI + AVFoundation（`Sources/`） | Python + Qt (PySide6)（`windows/`） |
 | プラグイン | Audio Unit (AUv2 / AUv3) | VST3 |
 | 配布物 | `EasyMovTrim-x.x.x-mac.dmg`（Apple Silicon / Intel） | `EasyMovTrim-x.x.x-windows-setup.exe` / `.zip`（x64） |
-| ffmpeg | ソースからビルドした LGPL 版を同梱 | BtbN/FFmpeg-Builds の GPL 版を同梱 |
+| ffmpeg | ソースからビルドした LGPL 版を同梱 | BtbN/FFmpeg-Builds の LGPL 版を同梱 |
 
 機能・操作・音声処理（プラグイン → フェーダー → フェード → メーター）は両方とも同じです。
 
@@ -71,11 +71,11 @@ powershell -ExecutionPolicy Bypass -File windows\build_windows.ps1 -Version 1.0.
 
 `dist\` に ZIP 版とインストーラーができます。
 
-### ライセンス上の注意
+### 配布時のライセンス対応
 
-- Mac 版に同梱している ffmpeg は LGPL です
-- Windows 版は GPL v3 の pedalboard（VST3 の読み込みに使用）を組み込んでいるため、Windows 版を配布するときは、このアプリのソースコードも GPL v3 の条件で公開する必要があります（GitHub で公開リポジトリにするなど）
-- 詳細は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+- リリースを作ると、DMG・インストーラーと一緒に、同梱した GPL / LGPL 部品のソース（FFmpeg、pedalboard 一式）が自動で添付されます
+- アプリ・DMG・インストーラーには、ライセンス全文（[LICENSE](LICENSE)、[licenses/](licenses/)）と [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を同梱しています
+- Windows 版の H.264 書き出しは Windows 標準のエンコーダー（Media Foundation）を使います
 
 ## Mac 版のビルド（開発用）
 
@@ -130,3 +130,10 @@ python3 -m venv .venv
 - `media.py` — ffmpeg / ffprobe の呼び出し
 - `exporter.py` — MP4 書き出し
 - `ui.py`, `widgets.py` — 画面
+
+## 製作者・ライセンス
+
+- Copyright © 2026 Naoto Iwaki
+- お問い合わせ・不具合報告: [GitHub Issues](https://github.com/wknt-mu/easymovtrim/issues)
+- ライセンス: **GNU General Public License v3.0 以降**（[LICENSE](LICENSE)）。いかなる保証もありません。
+- 同梱ソフトウェアのライセンスと商標: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
