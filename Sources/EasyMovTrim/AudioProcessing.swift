@@ -250,14 +250,23 @@ enum AudioTapFactory {
                 ctx.process(bufferListInOut, frames: Int(numberFramesOut.pointee), timeRange: timeRange)
             }
         )
+        // The macOS 26 SDK returns the tap as a managed reference; older SDKs return Unmanaged.
+        #if compiler(>=6.2)
         var tap: MTAudioProcessingTap?
+        #else
+        var tap: Unmanaged<MTAudioProcessingTap>?
+        #endif
         let status = MTAudioProcessingTapCreate(
             kCFAllocatorDefault, &callbacks, kMTAudioProcessingTapCreationFlag_PreEffects, &tap)
         guard status == noErr else {
             Unmanaged<TapContext>.fromOpaque(callbacks.clientInfo!).release()
             return nil
         }
+        #if compiler(>=6.2)
         return tap
+        #else
+        return tap?.takeRetainedValue()
+        #endif
     }
 
     static func makeAudioMix(track: AVAssetTrack, context: TapContext) -> AVAudioMix? {

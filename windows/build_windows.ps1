@@ -9,6 +9,7 @@ param(
     [string]$Python = "python"
 )
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"   # progress bars make downloads/unzips very slow
 Set-Location $PSScriptRoot
 $dist = Join-Path (Resolve-Path "..") "dist"
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
@@ -43,9 +44,15 @@ $test = "build\smoke"
 New-Item -ItemType Directory -Force -Path $test | Out-Null
 & "ffmpeg_bin\ffmpeg.exe" -hide_banner -loglevel error -y -f lavfi -i "testsrc2=size=640x360:rate=30:duration=4" `
     -f lavfi -i "sine=frequency=440:duration=4" -c:v mpeg4 -c:a libmp3lame "$test\in.avi"
-$p = Start-Process -FilePath "dist\EasyMovTrim\EasyMovTrim.exe" -Wait -PassThru `
+$errLog = Join-Path $env:TEMP "easymovtrim_error.log"
+if (Test-Path $errLog) { Remove-Item $errLog }
+$p = Start-Process -FilePath "dist\EasyMovTrim\EasyMovTrim.exe" -PassThru `
     -ArgumentList @("--export", "$test\in.avi", "$test\out.mp4", "--in", "1", "--out", "3", "--quality", "light", "--fadein", "0.5")
+$null = $p.Handle   # keeps ExitCode available after WaitForExit
+if (-not $p.WaitForExit(300000)) { $p.Kill(); throw "smoke test timed out" }
+if (Test-Path $errLog) { Get-Content $errLog | Write-Host }
 if ($p.ExitCode -ne 0 -or -not (Test-Path "$test\out.mp4")) { throw "smoke test failed (exit $($p.ExitCode))" }
+& "ffmpeg_bin\ffprobe.exe" -v error -show_entries format=duration -of csv=p=0 "$test\out.mp4"
 Write-Host "smoke test OK"
 
 # 5) Portable zip

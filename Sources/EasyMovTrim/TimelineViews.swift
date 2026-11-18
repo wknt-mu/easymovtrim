@@ -226,12 +226,19 @@ struct ThumbnailStrip: View {
 
     private func sample(width: CGFloat) -> [NSImage] {
         guard let first = images.first else { return [] }
-        let aspect = max(0.3, first.size.width / max(first.size.height, 1))
-        let visible = max(1, Int((width / (height * aspect)).rounded(.up)))
-        return (0..<visible).map { i in
-            let idx = Int((Double(i) + 0.5) / Double(visible) * Double(images.count))
-            return images[min(images.count - 1, idx)]
+        let imageHeight: CGFloat = max(first.size.height, 1)
+        let aspect: CGFloat = max(0.3, first.size.width / imageHeight)
+        let cellWidth: CGFloat = height * aspect
+        let visible: Int = max(1, Int((width / cellWidth).rounded(.up)))
+        let count: Int = images.count
+        var result: [NSImage] = []
+        result.reserveCapacity(visible)
+        for i in 0..<visible {
+            let position: Double = (Double(i) + 0.5) / Double(visible)
+            let idx: Int = min(count - 1, Int(position * Double(count)))
+            result.append(images[idx])
         }
+        return result
     }
 }
 

@@ -54,7 +54,23 @@ def run_headless(argv: list[str]) -> int:
 
 def main() -> int:
     if "--export" in sys.argv:
-        return run_headless(sys.argv[1:])
+        try:
+            return run_headless(sys.argv[1:])
+        except SystemExit:
+            raise
+        except BaseException:
+            # A windowed (no console) build would otherwise show a blocking error dialog.
+            import os
+            import tempfile
+            import traceback
+            text = traceback.format_exc()
+            try:
+                sys.stderr.write(text)
+            except Exception:
+                pass
+            with open(os.path.join(tempfile.gettempdir(), "easymovtrim_error.log"), "w", encoding="utf-8") as f:
+                f.write(text)
+            return 1
     from .ui import run_gui
     return run_gui(sys.argv[1:])
 
