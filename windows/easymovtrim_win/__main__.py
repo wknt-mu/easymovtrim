@@ -44,7 +44,9 @@ def run_headless(argv: list[str]) -> int:
         print(f"plugin: {slots[-1].name}")
 
     def progress(p: float) -> None:
-        sys.stderr.write(f"\rexport {p * 100:5.1f}%")
+        # sys.stderr is None in windowed (no console) builds
+        if sys.stderr is not None:
+            sys.stderr.write(f"\rexport {p * 100:5.1f}%")
 
     export(info, dst, a.start, end, LIGHT if a.quality == "light" else HIGH, params, slots,
            threading.Lock(), progress, threading.Event())
@@ -64,10 +66,8 @@ def main() -> int:
             import tempfile
             import traceback
             text = traceback.format_exc()
-            try:
+            if sys.stderr is not None:
                 sys.stderr.write(text)
-            except Exception:
-                pass
             with open(os.path.join(tempfile.gettempdir(), "easymovtrim_error.log"), "w", encoding="utf-8") as f:
                 f.write(text)
             return 1

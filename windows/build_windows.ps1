@@ -5,7 +5,7 @@
 #   EasyMovTrim-<ver>-windows-setup.exe      installer (if Inno Setup 6 is installed)
 param(
     [string]$Version = "1.0.0",
-    [string]$FfmpegZipUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.0-latest-win64-gpl-8.0.zip",
+    [string]$FfmpegZipUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-win64-gpl-8.1.zip",
     [string]$Python = "python"
 )
 $ErrorActionPreference = "Stop"
